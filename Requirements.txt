@@ -1,0 +1,63 @@
+Description
+===========
+
+Implement Patient management system.
+The client (no Roles in this case) should be able to:
+* Create a Patient, 
+* Find a Patient
+* Get information about a Patient
+* Edit a Patient
+* Deactivate a patient (not remove, just switch Active status to false)
+
+In other words, implement CRUD + Search.
+
+Patient's properties:
+=====================
+Surname.
+  Type: string.
+  Validation: required, up to 128 characters. Acceptable characters: {cyrillic, space, -}
+Name.
+  Type: string.
+  Validation: required, up to 128 characters. Acceptable characters: {cyrillic, space, -}
+Patronymic.
+  Type: string.
+  Validation: not required, up to 128 characters. Acceptable characters: {cyrillic, space, -}
+DateOfBirth
+  Type: Date.
+  Validation: required, =< current date, >= 01.01.1900 
+Gender.
+  Type: one of {Male, Female, Other}
+Primary phone number.
+  Type: string.
+  Validation: required. Exactly 13 characters, accepted characters: {+ 0-9} (E. g.: +380675043412)
+Additional contacts (collection of phone numbers and their types). Contact type: one of {Office; Home; Emergency}
+
+Search
+======
+
+The user should have a possibility to input in a single line a search query and search a Patient
+by surname, name, DOB, phone number.
+The search should start from the 3rd character [?]
+The query string length is bounded by 256.
+If the query string is shorter than 3 or longer than 256 characters, an error must be returned
+The search is done by partial match and logical AND.
+
+Technologies:
+=============
+
+Elastic
+.Net Core
+Any DB
+
+Result requirements:
+===================
+API is a must have
+A simple web-interface (form for filling in/editing/display + 5 buttons (CRUD+Search) + search field) is nice to have
+
+Deployment:
+===========
+
+Docker
+
+
+
