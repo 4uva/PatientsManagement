@@ -5,6 +5,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
+using Nest;
+
 using PatientsManagement.Common.Models;
 using PatientsManagement.Storage;
 
@@ -14,9 +16,10 @@ namespace PatientsManagement.Controllers
     [ApiController]
     public class PatientsController : ControllerBase
     {
-        public PatientsController(PatientsManagementContext context)
+        public PatientsController(PatientsManagementContext context, IElasticClient elastic)
         {
             this.context = context;
+            this.elastic = elastic;
         }
 
         // GET: api/Patients/5
@@ -49,6 +52,11 @@ namespace PatientsManagement.Controllers
             try
             {
                 await context.SaveChangesAsync();
+                var elasticResult = await elastic.UpdateAsync<Patient>(patient, u => u.Doc(patient));
+                if (!elasticResult.IsValid)
+                {
+                    // log error? abort operation?
+                }
             }
             catch (DbUpdateConcurrencyException)
             {
@@ -72,7 +80,11 @@ namespace PatientsManagement.Controllers
             context.Patients.Add(patient);
             await context.SaveChangesAsync();
 
-            // TODO: add to index?
+            var elasticResult = await elastic.IndexDocumentAsync(patient);
+            if (!elasticResult.IsValid)
+            {
+                // log error? abort operation?
+            }
 
             return patient.Id;
         }
@@ -90,7 +102,11 @@ namespace PatientsManagement.Controllers
             context.Patients.Remove(patient);
             await context.SaveChangesAsync();
 
-            // TODO: remove from index?
+            var elasticResult = await elastic.DeleteAsync<Patient>(patient);
+            if (!elasticResult.IsValid)
+            {
+                // log error? abort operation?
+            }
 
             return patient;
         }
@@ -105,5 +121,6 @@ namespace PatientsManagement.Controllers
         bool PatientExists(int id) => context.Patients.Any(e => e.Id == id);
 
         readonly PatientsManagementContext context;
+        readonly IElasticClient elastic;
     }
 }
