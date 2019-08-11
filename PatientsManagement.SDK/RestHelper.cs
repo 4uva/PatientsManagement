@@ -28,6 +28,13 @@ namespace PatientsManagement.SDK
         public async Task<TReceive> PostAsync<TSend, TReceive>(Uri webApiUri, TSend obj)
         {
             HttpResponseMessage sendResponse = await client.PostAsJsonAsync(webApiUri, obj);
+#if DEBUG
+            if (!sendResponse.IsSuccessStatusCode)
+            {
+                string content = await sendResponse.Content.ReadAsStringAsync();
+                Console.WriteLine("Error: " + content);
+            }
+#endif
             sendResponse.EnsureSuccessStatusCode();
             return await sendResponse.Content.ReadAsAsync<TReceive>();
         }
@@ -35,12 +42,26 @@ namespace PatientsManagement.SDK
         public async Task PutAsync<T>(Uri webApiUri, T obj)
         {
             HttpResponseMessage sendResponse = await client.PutAsJsonAsync(webApiUri, obj);
+#if DEBUG
+            if (!sendResponse.IsSuccessStatusCode)
+            {
+                string content = await sendResponse.Content.ReadAsStringAsync();
+                Console.WriteLine("Error: " + content);
+            }
+#endif
             sendResponse.EnsureSuccessStatusCode();
         }
 
         public async Task DeleteAsync(Uri webApiUri)
         {
             HttpResponseMessage sendResponse = await client.DeleteAsync(webApiUri);
+#if DEBUG
+            if (!sendResponse.IsSuccessStatusCode)
+            {
+                string content = await sendResponse.Content.ReadAsStringAsync();
+                Console.WriteLine("Error: " + content);
+            }
+#endif
             sendResponse.EnsureSuccessStatusCode();
         }
 

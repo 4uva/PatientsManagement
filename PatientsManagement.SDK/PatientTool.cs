@@ -42,8 +42,8 @@ namespace PatientsManagement.SDK//
             return await helper.GetAsync<List<Patient>>(builder.Uri);
         }
 
-        Uri GetUri() => new Uri("Patients");
-        Uri GetUriForId(int id) => new Uri($"Patients/{id}");
+        Uri GetUri() => new Uri("Patients", UriKind.Relative);
+        Uri GetUriForId(int id) => new Uri($"Patients/{id}", UriKind.Relative);
 
         RestHelper helper;
     }
