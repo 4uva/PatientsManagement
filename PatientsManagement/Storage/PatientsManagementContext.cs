@@ -13,6 +13,14 @@ namespace PatientsManagement.Storage
             : base(options)
         { }
 
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<Patient>()
+                .HasMany(p => p.AdditionalContacts)
+                .WithOne()
+                .IsRequired();
+        }
+
         public DbSet<Patient> Patients { get; set; }
     }
 }
