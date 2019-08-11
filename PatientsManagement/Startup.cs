@@ -11,6 +11,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using PatientsManagement.Elastic;
 using PatientsManagement.Storage;
 
 namespace PatientsManagement
@@ -30,6 +31,10 @@ namespace PatientsManagement
 
             services.AddDbContext<PatientsManagementContext>(options =>
                 options.UseSqlServer(Configuration.GetConnectionString("PatientsDatabase")));
+
+            var url = Configuration["ElasticSearch:url"];
+            var defaultIndex = Configuration["ElasticSearch:index"];
+            services.AddElasticsearch(url, defaultIndex);
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
