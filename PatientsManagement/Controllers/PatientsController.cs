@@ -33,9 +33,9 @@ namespace PatientsManagement.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<Patient>> GetPatient(int id)
         {
-            var patient = await context.Patients.FindAsync(id);
+            var patient = await FindActivePatientAsync(id);
 
-            if (patient == null || !patient.IsActive)
+            if (patient == null)
             {
                 return NotFound();
             }
@@ -53,12 +53,20 @@ namespace PatientsManagement.Controllers
                 return BadRequest();
             }
 
+            var originalPatient = await FindActivePatientAsync(id);
+            if (originalPatient == null)
+            {
+                return NotFound();
+            }
+
             try
             {
                 using (var transaction = await context.Database.BeginTransactionAsync())
                 {
-                    // TODO: check if patient is active!
-                    context.Entry(patient).State = EntityState.Modified;
+                    var entry = context.Entry(originalPatient);
+                    entry.CurrentValues.SetValues(patient);
+                    entry.State = EntityState.Modified;
+
                     await context.SaveChangesAsync();
                     var elasticResult = await elastic.UpdateAsync<Patient>(patient, u => u.Doc(patient));
                     if (!elasticResult.IsValid)
@@ -68,14 +76,11 @@ namespace PatientsManagement.Controllers
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!PatientExists(id))
+                if (await FetchActivePatientAsync(id) == null)
                 {
                     return NotFound();
                 }
-                else
-                {
-                    throw;
-                }
+                throw;
             }
 
             return NoContent();
@@ -105,8 +110,8 @@ namespace PatientsManagement.Controllers
         [HttpDelete("{id}")]
         public async Task<ActionResult<Patient>> DeletePatient(int id)
         {
-            var patient = await context.Patients.FindAsync(id);
-            if (patient == null || !patient.IsActive)
+            var patient = await FindActivePatientAsync(id);
+            if (patient == null)
             {
                 return NotFound();
             }
@@ -137,10 +142,22 @@ namespace PatientsManagement.Controllers
             return Ok(searchResult.Documents);
         }
 
-        bool PatientExists(int id)
+        async Task<Patient> FindActivePatientAsync(int id)
         {
-            var p = context.Patients.FirstOrDefault(e => e.Id == id);
-            return p != null && p.IsActive;
+            var patient = await context.Patients.FindAsync(id);
+            if (patient != null && patient.IsActive)
+                return patient;
+            else
+                return null;
+        }
+
+        async Task<Patient> FetchActivePatientAsync(int id)
+        {
+            var patient = await context.Patients.FirstOrDefaultAsync(p => p.Id == id);
+            if (patient != null && patient.IsActive)
+                return patient;
+            else
+                return null;
         }
 
         readonly PatientsManagementContext context;
