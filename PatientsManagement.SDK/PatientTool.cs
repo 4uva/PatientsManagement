@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
-
+using Microsoft.AspNetCore.WebUtilities;
 using PatientsManagement.Common.Models;
 
 namespace PatientsManagement.SDK//
@@ -33,13 +33,15 @@ namespace PatientsManagement.SDK//
         public async Task DeleteAsync(int id) =>
             await helper.DeleteAsync(GetUriForId(id));
 
-        public async Task<List<Patient>> SearchAsync(string queryString)
+        public async Task<IReadOnlyCollection<Patient>> SearchAsync(string queryString)
         {
-            var builder = new UriBuilder("Patients/search")
+            var query = new Dictionary<string, string>()
             {
-                Query = $"queryString={queryString}"
+                ["queryString"] = queryString
             };
-            return await helper.GetAsync<List<Patient>>(builder.Uri);
+            var uri = new Uri(QueryHelpers.AddQueryString("Patients/search", query), UriKind.Relative);
+            var resultList = await helper.GetAsync<List<Patient>>(uri);
+            return resultList.AsReadOnly();
         }
 
         Uri GetUri() => new Uri("Patients", UriKind.Relative);
