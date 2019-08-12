@@ -26,7 +26,7 @@ namespace PatientsManagement.Common.Models
 
         [Required]
         [ValidDate]
-        DateTime DateOfBirth { get; set; }
+        public DateTime DateOfBirth { get; set; }
 
         Gender Gender { get; set; }
 
