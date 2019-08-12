@@ -35,6 +35,8 @@ namespace PatientsManagement
             var url = Configuration["ElasticSearch:url"];
             var defaultIndex = Configuration["ElasticSearch:index"];
             services.AddElasticsearch(url, defaultIndex);
+
+            services.AddSingleton<IQueryService, QueryService>();
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)

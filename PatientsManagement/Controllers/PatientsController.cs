@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -8,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using Nest;
 
 using PatientsManagement.Common.Models;
+using PatientsManagement.Elastic;
 using PatientsManagement.Storage;
 
 namespace PatientsManagement.Controllers
@@ -16,10 +18,14 @@ namespace PatientsManagement.Controllers
     [ApiController]
     public class PatientsController : ControllerBase
     {
-        public PatientsController(PatientsManagementContext context, IElasticClient elastic)
+        public PatientsController(
+            PatientsManagementContext context,
+            IElasticClient elastic,
+            IQueryService queryService)
         {
             this.context = context;
             this.elastic = elastic;
+            this.queryService = queryService;
         }
 
         // GET: api/Patients/5
@@ -46,8 +52,6 @@ namespace PatientsManagement.Controllers
             }
 
             context.Entry(patient).State = EntityState.Modified;
-
-            // TODO: modify index?
 
             try
             {
@@ -112,15 +116,20 @@ namespace PatientsManagement.Controllers
         }
 
         [HttpGet("search")]
-        public async Task<ActionResult<List<Patient>>> Search([FromQuery] string searchString)
+        public async Task<ActionResult<IReadOnlyCollection<Patient>>> Search(
+            [FromQuery] [StringLength(256, MinimumLength = 3)] string queryString)
         {
-            // TODO: ask in the index
-            return new List<Patient>() { new Patient() };
+            if (queryString == null)
+                return BadRequest("No query specified");
+            var searchResult = await elastic.SearchAsync<Patient>(
+                s => queryService.PrepareQuery(s, queryString));
+            return Ok(searchResult.Documents);
         }
 
         bool PatientExists(int id) => context.Patients.Any(e => e.Id == id);
 
         readonly PatientsManagementContext context;
         readonly IElasticClient elastic;
+        readonly IQueryService queryService;
     }
 }
