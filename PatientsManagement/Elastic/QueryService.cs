@@ -26,7 +26,7 @@ namespace PatientsManagement.Elastic
 
         public QueryContainer MatchToken(QueryContainerDescriptor<Patient> q, string token)
         {
-            var processedToken = "*" + token.ToLower() + "*";
+            var processedToken = "*" + EscapeSpecial(token.ToLower()) + "*";
             var wildcards = patientFields.Select(field => q.Wildcard(field, processedToken)).ToList();
             return new BoolQuery()
             {
@@ -42,5 +42,7 @@ namespace PatientsManagement.Elastic
                 Must = singleContainers
             };
         }
+
+        static string EscapeSpecial(string s) => s.Replace("*", @"\*").Replace("?", @"\?");
     }
 }
