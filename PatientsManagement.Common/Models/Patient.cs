@@ -8,6 +8,7 @@ namespace PatientsManagement.Common.Models
     public class Patient
     {
         public int Id { get; set; }
+        public bool IsActive { get; set; }
 
         [StringLength(128, MinimumLength = 1)]
         [Required]

@@ -35,7 +35,7 @@ namespace PatientsManagement.Controllers
         {
             var patient = await context.Patients.FindAsync(id);
 
-            if (patient == null)
+            if (patient == null || !patient.IsActive)
             {
                 return NotFound();
             }
@@ -47,6 +47,7 @@ namespace PatientsManagement.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutPatient(int id, Patient patient)
         {
+            patient.IsActive = true;
             if (id != patient.Id)
             {
                 return BadRequest();
@@ -56,6 +57,7 @@ namespace PatientsManagement.Controllers
             {
                 using (var transaction = await context.Database.BeginTransactionAsync())
                 {
+                    // TODO: check if patient is active!
                     context.Entry(patient).State = EntityState.Modified;
                     await context.SaveChangesAsync();
                     var elasticResult = await elastic.UpdateAsync<Patient>(patient, u => u.Doc(patient));
@@ -83,6 +85,7 @@ namespace PatientsManagement.Controllers
         [HttpPost]
         public async Task<ActionResult<int>> PostPatient(Patient patient)
         {
+            patient.IsActive = true;
             using (var transaction = await context.Database.BeginTransactionAsync())
             {
                 context.Patients.Add(patient);
@@ -103,14 +106,14 @@ namespace PatientsManagement.Controllers
         public async Task<ActionResult<Patient>> DeletePatient(int id)
         {
             var patient = await context.Patients.FindAsync(id);
-            if (patient == null)
+            if (patient == null || !patient.IsActive)
             {
                 return NotFound();
             }
 
             using (var transaction = await context.Database.BeginTransactionAsync())
             {
-                context.Patients.Remove(patient);
+                patient.IsActive = false;
                 await context.SaveChangesAsync();
 
                 var elasticResult = await elastic.DeleteAsync<Patient>(patient);
@@ -134,7 +137,11 @@ namespace PatientsManagement.Controllers
             return Ok(searchResult.Documents);
         }
 
-        bool PatientExists(int id) => context.Patients.Any(e => e.Id == id);
+        bool PatientExists(int id)
+        {
+            var p = context.Patients.FirstOrDefault(e => e.Id == id);
+            return p != null && p.IsActive;
+        }
 
         readonly PatientsManagementContext context;
         readonly IElasticClient elastic;
