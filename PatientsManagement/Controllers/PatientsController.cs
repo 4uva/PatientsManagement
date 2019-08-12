@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
@@ -51,15 +52,16 @@ namespace PatientsManagement.Controllers
                 return BadRequest();
             }
 
-            context.Entry(patient).State = EntityState.Modified;
-
             try
             {
-                await context.SaveChangesAsync();
-                var elasticResult = await elastic.UpdateAsync<Patient>(patient, u => u.Doc(patient));
-                if (!elasticResult.IsValid)
+                using (var transaction = await context.Database.BeginTransactionAsync())
                 {
-                    // log error? abort operation?
+                    context.Entry(patient).State = EntityState.Modified;
+                    await context.SaveChangesAsync();
+                    var elasticResult = await elastic.UpdateAsync<Patient>(patient, u => u.Doc(patient));
+                    if (!elasticResult.IsValid)
+                        throw new InvalidOperationException("couldn't update index");
+                    transaction.Commit();
                 }
             }
             catch (DbUpdateConcurrencyException)
@@ -81,13 +83,16 @@ namespace PatientsManagement.Controllers
         [HttpPost]
         public async Task<ActionResult<int>> PostPatient(Patient patient)
         {
-            context.Patients.Add(patient);
-            await context.SaveChangesAsync();
-
-            var elasticResult = await elastic.IndexDocumentAsync(patient);
-            if (!elasticResult.IsValid)
+            using (var transaction = await context.Database.BeginTransactionAsync())
             {
-                // log error? abort operation?
+                context.Patients.Add(patient);
+                await context.SaveChangesAsync();
+
+                var elasticResult = await elastic.IndexDocumentAsync(patient);
+                if (!elasticResult.IsValid)
+                    throw new InvalidOperationException("couldn't update index");
+
+                transaction.Commit();
             }
 
             return patient.Id;
@@ -103,13 +108,16 @@ namespace PatientsManagement.Controllers
                 return NotFound();
             }
 
-            context.Patients.Remove(patient);
-            await context.SaveChangesAsync();
-
-            var elasticResult = await elastic.DeleteAsync<Patient>(patient);
-            if (!elasticResult.IsValid)
+            using (var transaction = await context.Database.BeginTransactionAsync())
             {
-                // log error? abort operation?
+                context.Patients.Remove(patient);
+                await context.SaveChangesAsync();
+
+                var elasticResult = await elastic.DeleteAsync<Patient>(patient);
+                if (!elasticResult.IsValid)
+                    throw new InvalidOperationException("couldn't update index");
+
+                transaction.Commit();
             }
 
             return patient;
