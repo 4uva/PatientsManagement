@@ -25,10 +25,20 @@ namespace PatientsManagement.TestApp
                     new AdditionalContact() { Kind = ContactKind.Home, Phone = "+380987654321" }
                 }
             };
-            
+
+            var p2 = new Patient()
+            {
+                Name = "Степан",
+                Surname = "-Клмн",
+                PrimaryPhone = "+380222333222"
+            };
+
             var id1 = await tool.AddAsync(p1);
             Console.WriteLine($"Successfully added {id1}");
-            
+
+            var id2 = await tool.AddAsync(p2);
+            Console.WriteLine($"Successfully added {id2}");
+
             var p1fromServer = await tool.GetAsync(id1);
             Console.WriteLine($"Successfully obtained back {StringifyPatient(p1fromServer)}");
             
@@ -45,9 +55,13 @@ namespace PatientsManagement.TestApp
             await PerformSearch("Филипп dhdhdhdh"); // works
             await PerformSearch("Филипп 444");    // works
             await PerformSearch("987654");    // works
+            await PerformSearch("Клмн");
+            await PerformSearch("-Клмн");
 
             await tool.DeleteAsync(id1);
             Console.WriteLine($"Successfully deleted {id1}");
+            await tool.DeleteAsync(id2);
+            Console.WriteLine($"Successfully deleted {id2}");
         }
 
         static async Task PerformSearch(string queryString)

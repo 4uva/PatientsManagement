@@ -21,48 +21,48 @@ namespace PatientsManagement.SDK
         public async Task<T> GetAsync<T>(Uri webApiUri)
         {
             HttpResponseMessage response = await client.GetAsync(webApiUri);
+#if DEBUG
+            await DisplayErrorIfAny(response);
+#endif
             response.EnsureSuccessStatusCode();
             return await response.Content.ReadAsAsync<T>();
         }
 
         public async Task<TReceive> PostAsync<TSend, TReceive>(Uri webApiUri, TSend obj)
         {
-            HttpResponseMessage sendResponse = await client.PostAsJsonAsync(webApiUri, obj);
+            HttpResponseMessage response = await client.PostAsJsonAsync(webApiUri, obj);
 #if DEBUG
-            if (!sendResponse.IsSuccessStatusCode)
-            {
-                string content = await sendResponse.Content.ReadAsStringAsync();
-                Console.WriteLine("Error: " + content);
-            }
+            await DisplayErrorIfAny(response);
 #endif
-            sendResponse.EnsureSuccessStatusCode();
-            return await sendResponse.Content.ReadAsAsync<TReceive>();
+            response.EnsureSuccessStatusCode();
+            return await response.Content.ReadAsAsync<TReceive>();
         }
 
         public async Task PutAsync<T>(Uri webApiUri, T obj)
         {
-            HttpResponseMessage sendResponse = await client.PutAsJsonAsync(webApiUri, obj);
+            HttpResponseMessage response = await client.PutAsJsonAsync(webApiUri, obj);
 #if DEBUG
-            if (!sendResponse.IsSuccessStatusCode)
-            {
-                string content = await sendResponse.Content.ReadAsStringAsync();
-                Console.WriteLine("Error: " + content);
-            }
+            await DisplayErrorIfAny(response);
 #endif
-            sendResponse.EnsureSuccessStatusCode();
+            response.EnsureSuccessStatusCode();
         }
 
         public async Task DeleteAsync(Uri webApiUri)
         {
-            HttpResponseMessage sendResponse = await client.DeleteAsync(webApiUri);
+            HttpResponseMessage response = await client.DeleteAsync(webApiUri);
 #if DEBUG
+            await DisplayErrorIfAny(response);
+#endif
+            response.EnsureSuccessStatusCode();
+        }
+
+        static async Task DisplayErrorIfAny(HttpResponseMessage sendResponse)
+        {
             if (!sendResponse.IsSuccessStatusCode)
             {
                 string content = await sendResponse.Content.ReadAsStringAsync();
                 Console.WriteLine("Error: " + content);
             }
-#endif
-            sendResponse.EnsureSuccessStatusCode();
         }
 
         readonly HttpClient client;
