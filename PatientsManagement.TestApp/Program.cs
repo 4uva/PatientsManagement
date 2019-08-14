@@ -10,7 +10,8 @@ namespace PatientsManagement.TestApp
     class Program
     {
         static readonly Uri uri = new Uri("https://localhost");
-        static readonly int port = 44374;
+        //static readonly int port = 44376;
+        static readonly int port = 44384;
         static readonly PatientTool tool = new PatientTool(uri, port);
 
         static async Task Main(string[] args)
@@ -19,6 +20,7 @@ namespace PatientsManagement.TestApp
             {
                 Name = "Филипп",
                 Surname = "Хрюшин",
+                DateOfBirth = new DateTime(2000, 1, 1),
                 PrimaryPhone = "+380123456789",
                 AdditionalContacts = new List<AdditionalContact>()
                 {
@@ -30,6 +32,7 @@ namespace PatientsManagement.TestApp
             {
                 Name = "Степан",
                 Surname = "-Клмн",
+                DateOfBirth = new DateTime(1999, 5, 17),
                 PrimaryPhone = "+380222333222"
             };
 
