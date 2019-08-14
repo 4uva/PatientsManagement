@@ -30,9 +30,9 @@ namespace PatientsManagement
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
 
             services.AddDbContext<PatientsManagementContext>(options =>
-                options.UseSqlServer(Configuration.GetConnectionString("PatientsDatabase")));
+                options.UseSqlServer(Configuration.GetConnectionString("PatientsDatabase.Docker")));
 
-            var url = Configuration["ElasticSearch:url"];
+            var url = Configuration["ElasticSearch:url_docker"];
             var defaultIndex = Configuration["ElasticSearch:index"];
             services.AddElasticsearch(url, defaultIndex);
 

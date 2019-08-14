@@ -10,9 +10,9 @@ namespace PatientsManagement.TestApp
     class Program
     {
         static readonly Uri uri = new Uri("https://localhost");
-        //static readonly int port = 44376;
-        static readonly int port = 44384;
-        static readonly PatientTool tool = new PatientTool(uri, port);
+        static readonly int localport = 44374;
+        static readonly int dockerport = 44384;
+        static readonly PatientTool tool = new PatientTool(uri, dockerport);
 
         static async Task Main(string[] args)
         {
