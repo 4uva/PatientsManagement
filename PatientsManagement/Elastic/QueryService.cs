@@ -20,7 +20,10 @@ namespace PatientsManagement.Elastic
 
         public ISearchRequest PrepareQuery(SearchDescriptor<Patient> descriptor, string queryString)
         {
-            var tokens = queryString.Split();
+            // workaround for non-matching special characters
+            // based on the precondition: special characters include only + and -
+            // side effect: possible false positives in search if search string contains dash
+            var tokens = queryString.Split(new char[] { ' ', '+', '-' }, StringSplitOptions.RemoveEmptyEntries);
             return descriptor.Query(q => MatchAllTokens(q, tokens));
         }
 

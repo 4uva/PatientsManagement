@@ -29,3 +29,17 @@ namespace PatientsManagement.Elastic
         }
     }
 }
+
+// TODO: study the possibility of switching to keyword analyzer
+//client.Indices.Create(defaultIndex, c => c.Settings(s => s.Analysis(a => a.Analyzers(aa => aa
+//                .Custom("modified_keyword", ca => ca
+//                    .Tokenizer("keyword")
+//                    .Filters("lowercase"))))));
+/*
+https://www.elastic.co/guide/en/elasticsearch/client/net-api/current/writing-analyzers.html
+https://www.elastic.co/guide/en/elasticsearch/client/net-api/current/testing-analyzers.html
+https://www.elastic.co/guide/en/elasticsearch/reference/current/analysis.html#_specifying_an_index_time_analyzer
+https://www.khalidabuhakmeh.com/elasticsearch-lowercase-keyword-analyzer
+https://www.elastic.co/guide/en/elasticsearch/reference/current/analysis-keyword-analyzer.html
+ */
+
